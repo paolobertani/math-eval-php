@@ -49,7 +49,7 @@ if( ! defined( "matheval_unary_minus_has_highest_precedence" ) )
 
 
 
-function matheval( $expression, $parameters = null, &$error = null )
+function matheval( $expression, &$error = null, $parameters = null )
 {
     $name = "";
     $value = 0.0;
