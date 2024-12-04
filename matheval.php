@@ -636,13 +636,13 @@ function matheval_processFactorial( $eval,
         return 0;
     }
 
-    $result = matheval_gamma( $value + 1 );
-
-    if( is_nan( $result ) || is_infinite( $result ) )
+    if( $value > 170 )
     {
-        $eval->error = "result is complex or too big";
+        $eval->error = "result is too big";
         return 0;
     }
+
+    $result = matheval_gamma( $value + 1 );
 
     matheval_processToken( $eval, $rightOp );
     if( $eval->error ) return 0;
@@ -1167,7 +1167,8 @@ function matheval_gamma( $x )
         else
         {
             # Use the identity _gamma( z+n ) = z*( z+1 )* ... *( z+n-1 )*_gamma( z )
-            for ( $i = 0; $i < $n; $i++ ) {
+            for ( $i = 0; $i < $n; $i++ )
+            {
                 $result *= $y++;
             }
         }
