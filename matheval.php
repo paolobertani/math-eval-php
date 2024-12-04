@@ -69,7 +69,7 @@ function matheval( $expression, &$error = null, $parameters = null )
     }
     else
     {
-        $keywords =
+        $resKWords =
         [
             "exp",
             "fact",
@@ -109,7 +109,7 @@ function matheval( $expression, &$error = null, $parameters = null )
                 throw new Exception( "parameter value must be a integer or float" );
             }
 
-            if( in_array( $name, $keywords ) !== false )
+            if( in_array( $name, $resKWords ) !== false )
             {
                 throw new Exception( "parameter name must not be a reserved keyword: $name" );
             }
@@ -117,7 +117,7 @@ function matheval( $expression, &$error = null, $parameters = null )
 
         unset( $name );
         unset( $value );
-        unset( $keywords );
+        unset( $resKWords );
     }
 
     uksort( $parameters, function ( $key1, $key2 )
