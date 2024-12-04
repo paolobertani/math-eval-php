@@ -218,7 +218,7 @@ function _processAddends( $eval,
 
     // Check if must exit
 
-    if( ( $eval->roundBracketsCount === $breakOnRoundBracketsCount ) || ( $breakOnEOF && $rightOp === "ETEof" ) || ( $breakOnCOMMA && $rightOp === "ETcom" ) )
+    if( ( $eval->roundBracketsCount === $breakOnRoundBracketsCount ) || ( $breakOnEOF && $rightOp === "Eof" ) || ( $breakOnCOMMA && $rightOp === "com" ) )
     {
         if( is_nan( $result ) || is_infinite( $result ) )
         {
@@ -233,20 +233,20 @@ function _processAddends( $eval,
 
     switch( $rightOp )
     {
-        case "ETEof":
+        case "Eof":
             $eval->error = "unexpected end of expression";
             break;
 
-        case "ETrbc":
+        case "rbc":
             $eval->error = "unexpected close round bracket";
             break;
 
-        case "ETcom":
-            $eval->error = "unexpeced comma";
+        case "com":
+            $eval->error = "unexpected comma";
             break;
 
         default:
-            $eval->error = "unexpeced symbol";
+            $eval->error = "unexpected symbol";
             break;
     }
 
@@ -273,19 +273,19 @@ function _processFactors( $eval,
 
     $funcTok =
     [
-        "ETExp",
-        "ETFact",
-        "ETPow",
-        "ETCos",
-        "ETSin",
-        "ETTan",
-        "ETLog",
-        "ETMax",
-        "ETMin",
-        "ETACos",
-        "ETASin",
-        "ETATan",
-        "ETAvg"
+        "Exp",
+        "Fact",
+        "Pow",
+        "Cos",
+        "Sin",
+        "Tan",
+        "Log",
+        "Max",
+        "Min",
+        "ACos",
+        "ASin",
+        "ATan",
+        "Avg"
     ];
 
     do
@@ -296,13 +296,13 @@ function _processFactors( $eval,
         // Unary minus or plus ?
         // store the sign and get the next token
 
-        if( $token === "ETSub" )
+        if( $token === "Sub" )
         {
             $sign = -1;
             $rightValue = _processToken( $eval, $token );
             if( $eval->error ) return 0;
         }
-        else if( $token === "ETSum" )
+        else if( $token === "Sum" )
         {
             $sign = 1;
             $rightValue = _processToken( $eval, $token );
@@ -316,7 +316,7 @@ function _processFactors( $eval,
         // Open round bracket?
         // The expression between brackets is evaluated.
 
-        if( $token === "ETrbo" )
+        if( $token === "rbo" )
         {
             $eval->roundBracketsCount++;
 
@@ -333,13 +333,13 @@ function _processFactors( $eval,
             $rightValue = _processFunction( $eval, $token );
             if( $eval->error ) return 0;
 
-            $token = "ETVal";
+            $token = "Val";
         }
 
         // Excluded previous cases then
         // the token must be a number.
 
-        if( $token !== "ETVal" )
+        if( $token !== "Val" )
         {
             $eval->error = "expected value";
             return 0;
@@ -353,7 +353,7 @@ function _processFactors( $eval,
 
         // Unary minus precedence (highest/lowest) affects this section of code
 
-        if( $nextOp === "ETFct" )
+        if( $nextOp === "Fct" )
         {
             if( matheval_unary_minus_has_highest_precedence )
             {
@@ -367,7 +367,7 @@ function _processFactors( $eval,
             if( $eval->error ) return 0;
         }
 
-        if( $nextOp === "ETExc" )
+        if( $nextOp === "Exc" )
         {
             if( matheval_unary_minus_has_highest_precedence )
             {
@@ -384,7 +384,7 @@ function _processFactors( $eval,
         // multiplication/division is finally
         // calculated
 
-        if( $op === "ETMul" )
+        if( $op === "Mul" )
         {
             $leftValue = $leftValue * $rightValue * $sign;
         }
@@ -412,7 +412,7 @@ function _processFactors( $eval,
         // ...unless an exponent is evaluated
         // (because exponentiation ^ operator have higher precedence)
     }
-    while( ( $op === "ETMul" || $op === "ETDiv" ) && ! $isExponent );
+    while( ( $op === "Mul" || $op === "Div" ) && ! $isExponent );
 
     $leftOp = $op;
 
@@ -440,7 +440,7 @@ function _processFunction( $eval, $func )
     _processToken( $eval, $token );
     if( $eval->error ) return 0;
 
-    if( $token !== "ETrbo" )
+    if( $token !== "rbo" )
     {
         $eval->error = "expected open round bracket after function name";
         return 0;
@@ -450,44 +450,44 @@ function _processFunction( $eval, $func )
 
     switch( $func )
     {
-        case "ETSin":
+        case "Sin":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = sin( $result );
             break;
 
-        case "ETCos":
+        case "Cos":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = cos( $result );
             break;
 
-        case "ETTan":
+        case "Tan":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = tan( $result );
             break;
 
-        case "ETASi":
+        case "ASi":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = asin( $result );
             break;
 
-        case "ETACo":
-            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+        case "ACo":
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = acos( $result );
             break;
 
-        case "ETATa":
-            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+        case "ATa":
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = atan( $result );
             break;
 
-        case "ETFac":
-            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+        case "Fac":
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             if( $result < 0 )
             {
@@ -495,18 +495,17 @@ function _processFunction( $eval, $func )
             }
             else
             {
-
                 $result = _gamma( 1 + $result );
             }
             break;
 
-        case "ETExp":
+        case "Exp":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = exp( $result );
             break;
 
-        case "ETPow":
+        case "Pow":
             $result = _processAddends( $eval, -1, false, true );
             if( $eval->error ) return 0;
             $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
@@ -514,10 +513,10 @@ function _processFunction( $eval, $func )
             $result = pow( $result, $result2 );
             break;
 
-        case "ETLog":
+        case "Log":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
-            if( $tokenThatCausedBreak === "ETrbc" )
+            if( $tokenThatCausedBreak === "rbc" )
             {
                 // log(n) with one parameter
                 $result = log( $result );
@@ -530,10 +529,10 @@ function _processFunction( $eval, $func )
             }
             break;
 
-        case "ETMax":
+        case "Max":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
-            while( $tokenThatCausedBreak === "ETcom" )
+            while( $tokenThatCausedBreak === "com" )
             {
                 $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
                 if( $eval->error ) return 0;
@@ -545,26 +544,26 @@ function _processFunction( $eval, $func )
             }
             break;
 
-        case "ETMin":
+        case "Min":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
-            while( $tokenThatCausedBreak === "ETcom" )
+            while( $tokenThatCausedBreak === "com" )
             {
                 $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
                 if( $eval->error ) return 0;
 
                 if( $result2 < $result )
                 {
-                    $esult = $result2;
+                    $result = $result2;
                 }
             }
             break;
 
-        case "ETAvg":
+        case "Avg":
             $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
             $count = 1;
-            while( $tokenThatCausedBreak === "ETcom" )
+            while( $tokenThatCausedBreak === "com" )
             {
                 $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
                 if( $eval->error ) return 0;
@@ -600,7 +599,7 @@ function _processExponentiation( $eval,
     $exponent = 0.0;
     $result = 0.0;
 
-    $exponent = _processFactors( $eval, 1, "ETMul", true, $rightOp );
+    $exponent = _processFactors( $eval, 1, "Mul", true, $rightOp );
     if( $eval->error ) return 0;
 
     $result = pow( $base, $exponent );
@@ -626,11 +625,11 @@ function _processFactorial( $eval,
     if( $value < 0 )
     {
         $eval->error = "attempt to evaluate factorial of negative number";
-        $rightOp = "ETErr";
+        $rightOp = "Err";
         return 0;
     }
 
-    $result = _gamma( value + 1 );
+    $result = _gamma( $value + 1 );
 
     if( is_nan( $result ) || is_infinite( $result ) )
     {
@@ -658,10 +657,10 @@ function _processToken( $eval,
     $name = "";
     $value = 0.0;
 
-    $t = "ETBlk";
+    $t = "Blk";
     $v = 0;
 
-    while( $t === "ETBlk" )
+    while( $t === "Blk" )
     {
         // value maybe
 
@@ -670,12 +669,12 @@ function _processToken( $eval,
             $v = _processValue( $eval );
             if( $eval->error )
             {
-                $t = "ETErr";
+                $t = "Err";
                 return $t;
             }
             else
             {
-                $t = "ETVal";
+                $t = "Val";
             }
             break;
         }
@@ -687,7 +686,7 @@ function _processToken( $eval,
             {
                 if( substr( $eval->expression, $eval->cursor, strlen( $name ) ) === $name )
                 {
-                    $token = "ETVal";
+                    $token = "Val";
                     $eval->cursor += strlen( $name );
                     return $value;
                 }
@@ -701,69 +700,69 @@ function _processToken( $eval,
                 case "\r":
                 case "\t":
                 case " ":
-                    $t = "ETBlk";
+                    $t = "Blk";
                     $eval->cursor++;
                     break;
 
                 case "+":
-                    _processPlusToken( $eval, $t);
+                    _processPlusToken( $eval, $t );
                     break;
 
                 case "-":
-                    $t = "ETSub";
+                    $t = "Sub";
                     $eval->cursor++;
                     break;
 
                 case "*":
-                    $t = "ETMul";
+                    $t = "Mul";
                     $eval->cursor++;
                     break;
 
                 case "/":
-                    $t = "ETDiv";
+                    $t = "Div";
                     $eval->cursor++;
                     break;
 
                 case "^":
-                    $t = "ETExc";
+                    $t = "Exc";
                     $eval->cursor++;
                     break;
 
                 case "!":
-                    $t = "ETFct";
+                    $t = "Fct";
                     $eval->cursor++;
                     break;
 
                 case "(":
-                    $t = "ETrbo";
+                    $t = "rbo";
                     $eval->cursor++;
                     break;
 
                 case ")":
-                    $t = "ETrbc";
+                    $t = "rbc";
                     $eval->cursor++;
                     break;
 
                 case "\0":
-                    $t = "ETEof";
+                    $t = "Eof";
                     $eval->cursor++;
                     break;
 
                 case ",":
-                    $t = "ETcom";
+                    $t = "com";
                     $eval->cursor++;
                     break;
 
                 case "e":
                     if( substr( $eval->expression, $eval->cursor, 3 ) === "exp" )
                     {
-                        $t = "ETExp";
+                        $t = "Exp";
                         $eval->cursor += 3;
                     }
                     else
                     {
                         $v = exp( 1 );
-                        $t = "ETVal";
+                        $t = "Val";
                         $eval->cursor++;
                     }
                     break;
@@ -771,12 +770,12 @@ function _processToken( $eval,
                 case "f":
                     if( substr( $eval->expression, $eval->cursor, 4 ) === "fact" )
                     {
-                        $t = "ETFac";
+                        $t = "Fac";
                         $eval->cursor += 4;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
@@ -784,126 +783,126 @@ function _processToken( $eval,
                     if( substr( $eval->expression, $eval->cursor, 2 ) === "pi" )
                     {
                         $v = M_PI;
-                        $t = "ETVal";
+                        $t = "Val";
                         $eval->cursor += 2;
                     }
                     elseif( substr( $eval->expression, $eval->cursor, 3 ) === "pow" )
                     {
-                        $t = "ETPow";
+                        $t = "Pow";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
                 case "c":
                     if( substr( $eval->expression, $eval->cursor, 3 ) === "cos" )
                     {
-                        $t = "ETCos";
+                        $t = "Cos";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
                 case "s":
                     if( substr( $eval->expression, $eval->cursor, 3 ) === "sin" )
                     {
-                        $t = "ETSin";
+                        $t = "Sin";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
                 case "t":
                     if( substr( $eval->expression, $eval->cursor, 3 ) === "tan" )
                     {
-                        $t = "ETTan";
+                        $t = "Tan";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
                 case "l":
                     if( substr( $eval->expression, $eval->cursor, 3 ) === "log" )
                     {
-                        $t = "ETLog";
+                        $t = "Log";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
                 case "m":
                     if( substr( $eval->expression, $eval->cursor, 3 ) === "max" )
                     {
-                        $t = "ETMax";
+                        $t = "Max";
                         $eval->cursor += 3;
                     }
                     elseif( substr( $eval->expression, $eval->cursor, 3 ) === "min" )
                     {
-                        $t = "ETMin";
+                        $t = "Min";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
                 case "a":
                     if( substr( $eval->expression, $eval->cursor, 4 ) === "asin" )
                     {
-                        $t = "ETASi";
+                        $t = "ASi";
                         $eval->cursor += 4;
                     }
                     elseif( substr( $eval->expression, $eval->cursor, 4 ) === "acos" )
                     {
-                        $t = "ETACo";
+                        $t = "ACo";
                         $eval->cursor += 4;
                     }
                     elseif( substr( $eval->expression, $eval->cursor, 4 ) === "atan" )
                     {
-                        $t = "ETATa";
+                        $t = "ATa";
                         $eval->cursor += 4;
                     }
                     elseif( substr( $eval->expression, $eval->cursor, 7 ) === "average" )
                     {
-                        $t = "ETAvg";
+                        $t = "Avg";
                         $eval->cursor += 7;
                     }
                     elseif( substr( $eval->expression, $eval->cursor, 3 ) === "avg" )
                     {
-                        $t = "ETAvg";
+                        $t = "Avg";
                         $eval->cursor += 3;
                     }
                     else
                     {
-                        $t = "ETErr";
+                        $t = "Err";
                     }
                     break;
 
 
                 default:
-                    $t = "ETErr";
+                    $t = "Err";
                     break;
             }
         }
     }
 
-    if( $t === "ETErr" )
+    if( $t === "Err" )
     {
         $eval->error = "unexpected symbol";
     }
@@ -934,11 +933,11 @@ function _processPlusToken( $eval, &$token )
 
     if( $c === "+" )
     {
-        $token = "ETErr";
+        $token = "Err";
     }
     else
     {
-        $token = "ETSum";
+        $token = "Sum";
     }
 
     return 0;
