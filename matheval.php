@@ -980,31 +980,94 @@ function _processValue( $eval )
 
 // php implementation of C's strtod
 
-function _strtod( $string, &$endptr = null )
+function _strtod( $str, &$endptr = null )
 {
-    $string = ltrim( $string );
+    // Skip leading whitespace
 
-    // Match a valid floating-point number
-
-    if( preg_match('/^[+-]?([0-9]*\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE][+-]?[0-9]+)?/', $string, $matches ) )
+    $i = 0;
+    while( $str[ $i ] === ' ' || $str[ $i ] === '\t' || $str[ $i ] === '\n' || $str[ $i ] === '\r' )
     {
-        $number = $matches[0];
-
-        $result = (float) $number;
-
-        $endptr = strlen( $number );
-
-        return $result;
+        $i++;
     }
 
-    $endptr = 0;
+    // Check for optional sign
 
-    return 0.0;
+    $sign = 1;
+    if( $str[ $i ] === '-' )
+    {
+        $sign = -1;
+        $i++;
+    }
+    elseif( $str[ 0 ] === '+' )
+    {
+        $i++;
+    }
+
+    // Parse the integer part
+
+    $integer_part = 0;
+    while( $str[ $i ] >= '0' && $str[ $i ] <= '9' )
+    {
+        $integer_part = $integer_part * 10 + (int)$str[ $i ];
+        $i++;
+    }
+
+
+    // Parse the fractional part
+
+    $fractional_part = 0;
+    $fractional_divisor = 1;
+    if( $str[ $i ] === '.' )
+    {
+        $i++;
+        while( $str[ $i ] >= '0' && $str[ $i ] <= '9' )
+        {
+            $fractional_part = $fractional_part * 10 + (int)$str[ $i ];
+            $fractional_divisor *= 10;
+            $i++;
+        }
+    }
+
+    // Parse the exponent part
+
+    $exponent = 0;
+    $exponent_sign = 1;
+    if( $str[ $i ] === 'e' || $str[ $i ] === 'E' )
+    {
+        $i++;
+        if( $str[ $i ] === '-' )
+        {
+            $exponent_sign = -1;
+            $i++;
+        }
+        elseif( $str[ $i ] === '+' )
+        {
+            $i++;
+        }
+
+        while( $str[ $i ] >= '0' && $str[ $i ] <= '9' )
+        {
+            $exponent = $exponent * 10 + (int)$str[ $i ];
+            $i++;
+        }
+
+        $exponent *= $exponent_sign;
+    }
+
+    // Done
+
+    $result = $sign *
+              ( $integer_part + $fractional_part / $fractional_divisor ) *
+              pow( 10, $exponent );
+
+    $endptr = $i;
+
+    return $result;
 }
 
 
 
-// php implementation gamma function
+// php implementation of gamma function. credit:
 // https://hewgill.com/picomath/php/gamma.php.html
 
 function _gamma( $x )
