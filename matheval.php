@@ -495,8 +495,15 @@ function _processFunction( $eval, $func )
             }
             else
             {
-                $result = _gamma( 1 + $result );
-            }
+                if( $result > 170 )
+                {
+                    $eval->error = "result is too big";
+                }
+                else
+                {
+                    $result = _gamma( 1 + $result );
+                }
+             }
             break;
 
         case "Exp":
