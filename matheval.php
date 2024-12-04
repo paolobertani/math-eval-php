@@ -139,7 +139,7 @@ function matheval( $expression, &$error = null, $parameters = null )
     $eval->roundBracketsCount = 0;
     $eval->error = "";
 
-    $result = _processAddends( $eval, -1, true, false );
+    $result = matheval_processAddends( $eval, -1, true, false );
 
     if( $eval->error )
     {
@@ -166,11 +166,11 @@ function matheval( $expression, &$error = null, $parameters = null )
 // higher precedence. In the second case the expression is evaluated first.
 // "breakOn" parameters define cases where the function must exit.
 
-function _processAddends( $eval,
-                          $breakOnRoundBracketsCount,    // If open brackets count goes down to this count then exit;
-                          $breakOnEOF,                   // exit if the end of the string is met;
-                          $breakOnCOMMA,                 // exit if a comma is met;
-                         &$tokenThatCausedBreak = null ) // if not null the token/symbol that caused the function to exit;
+function matheval_processAddends( $eval,
+                                  $breakOnRoundBracketsCount,    // If open brackets count goes down to this count then exit;
+                                  $breakOnEOF,                   // exit if the end of the string is met;
+                                  $breakOnCOMMA,                 // exit if a comma is met;
+                                 &$tokenThatCausedBreak = null ) // if not null the token/symbol that caused the function to exit;
 {
     $leftOp = null;
     $rightOp =null;
@@ -190,7 +190,7 @@ function _processAddends( $eval,
 
         // [ Each addend A is treated as a (potential and higher-precedence)
         //   multiplication and evaluated as 1 * A with the function below ]
-        $value = _processFactors( $eval, 1, "Mul", false, $rightOp );
+        $value = matheval_processFactors( $eval, 1, "Mul", false, $rightOp );
         if( $eval->error ) return 0;
 
         $result = $leftOp === "Sum" ? ( $result + $value ) : ( $result - $value );
@@ -259,11 +259,11 @@ function _processAddends( $eval,
 // F1 [ * F2  [ / F3 [ * F4 ... ] ] ]
 // Where Fn is a value or a higher precedence expression.
 
-function _processFactors( $eval,
-                          $leftValue, // The value (already fetched) on the left to be multiplied(divided);
-                          $op,        // is it multiply or divide;
-                          $isExponent,// is an exponent being evaluated ?
-                         &$leftOp )   // RETURN: factors are over, this is the next operator (token).
+function matheval_processFactors( $eval,
+                                  $leftValue, // The value (already fetched) on the left to be multiplied(divided);
+                                  $op,        // is it multiply or divide;
+                                  $isExponent,// is an exponent being evaluated ?
+                                 &$leftOp )   // RETURN: factors are over, this is the next operator (token).
 {
     $token = "";
     $nextOp = "";
@@ -290,7 +290,7 @@ function _processFactors( $eval,
 
     do
     {
-        $rightValue = _processToken( $eval, $token );
+        $rightValue = matheval_processToken( $eval, $token );
         if( $eval->error ) return 0;
 
         // Unary minus or plus ?
@@ -299,13 +299,13 @@ function _processFactors( $eval,
         if( $token === "Sub" )
         {
             $sign = -1;
-            $rightValue = _processToken( $eval, $token );
+            $rightValue = matheval_processToken( $eval, $token );
             if( $eval->error ) return 0;
         }
         else if( $token === "Sum" )
         {
             $sign = 1;
-            $rightValue = _processToken( $eval, $token );
+            $rightValue = matheval_processToken( $eval, $token );
             if( $eval->error ) return 0;
         }
         else
@@ -320,7 +320,7 @@ function _processFactors( $eval,
         {
             $eval->roundBracketsCount++;
 
-            $rightValue = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $rightValue = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
 
             $token = "value";
@@ -330,7 +330,7 @@ function _processFactors( $eval,
 
         if( in_array( $token, $funcTok ) )
         {
-            $rightValue = _processFunction( $eval, $token );
+            $rightValue = matheval_processFunction( $eval, $token );
             if( $eval->error ) return 0;
 
             $token = "Val";
@@ -348,7 +348,7 @@ function _processFactors( $eval,
         // Get beforehand the next token
         // to see if it's an exponential or factorial operator
 
-        _processToken( $eval, $nextOp );
+        matheval_processToken( $eval, $nextOp );
         if( $eval->error ) return 0;
 
         // Unary minus precedence (highest/lowest) affects this section of code
@@ -357,12 +357,12 @@ function _processFactors( $eval,
         {
             if( matheval_unary_minus_has_highest_precedence )
             {
-                $rightValue = _processFactorial( $eval, $rightValue * $sign, $nextOp );
+                $rightValue = matheval_processFactorial( $eval, $rightValue * $sign, $nextOp );
                 $sign = 1;
             }
             else
             {
-                $rightValue = _processFactorial( $eval, $rightValue, $nextOp );
+                $rightValue = matheval_processFactorial( $eval, $rightValue, $nextOp );
             }
             if( $eval->error ) return 0;
         }
@@ -371,12 +371,12 @@ function _processFactors( $eval,
         {
             if( matheval_unary_minus_has_highest_precedence )
             {
-                $rightValue = _processExponentiation( $eval, $rightValue * $sign, $nextOp );
+                $rightValue = matheval_processExponentiation( $eval, $rightValue * $sign, $nextOp );
                 $sign = 1;
             }
             else
             {
-                $rightValue = _processExponentiation( $eval, $rightValue, $nextOp );
+                $rightValue = matheval_processExponentiation( $eval, $rightValue, $nextOp );
             }
             if( $eval->error ) return 0;
         }
@@ -425,7 +425,7 @@ function _processFactors( $eval,
 // inside the round brackets then computes the function
 // specified by the token `func`.
 
-function _processFunction( $eval, $func )
+function matheval_processFunction( $eval, $func )
 {
     $result = 0.0;
     $result2= 0.0;
@@ -437,7 +437,7 @@ function _processFunction( $eval, $func )
 
     // Eat an open round bracket and count it
 
-    _processToken( $eval, $token );
+    matheval_processToken( $eval, $token );
     if( $eval->error ) return 0;
 
     if( $token !== "rbo" )
@@ -451,43 +451,43 @@ function _processFunction( $eval, $func )
     switch( $func )
     {
         case "Sin":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = sin( $result );
             break;
 
         case "Cos":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = cos( $result );
             break;
 
         case "Tan":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = tan( $result );
             break;
 
         case "ASi":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = asin( $result );
             break;
 
         case "ACo":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = acos( $result );
             break;
 
         case "ATa":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = atan( $result );
             break;
 
         case "Fac":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             if( $result < 0 )
             {
@@ -501,27 +501,27 @@ function _processFunction( $eval, $func )
                 }
                 else
                 {
-                    $result = _gamma( 1 + $result );
+                    $result = matheval_gamma( 1 + $result );
                 }
              }
             break;
 
         case "Exp":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = exp( $result );
             break;
 
         case "Pow":
-            $result = _processAddends( $eval, -1, false, true );
+            $result = matheval_processAddends( $eval, -1, false, true );
             if( $eval->error ) return 0;
-            $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+            $result2 = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = pow( $result, $result2 );
             break;
 
         case "Log":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
             if( $tokenThatCausedBreak === "rbc" )
             {
@@ -530,18 +530,18 @@ function _processFunction( $eval, $func )
             }
             else
             {
-                $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
+                $result2 = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
                 if( $eval->error ) return 0;
                 $result = log( $result2 ) / log( $result );
             }
             break;
 
         case "Max":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
             while( $tokenThatCausedBreak === "com" )
             {
-                $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+                $result2 = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
                 if( $eval->error ) return 0;
 
                 if( $result2 > $result )
@@ -552,11 +552,11 @@ function _processFunction( $eval, $func )
             break;
 
         case "Min":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
             while( $tokenThatCausedBreak === "com" )
             {
-                $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+                $result2 = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
                 if( $eval->error ) return 0;
 
                 if( $result2 < $result )
@@ -567,12 +567,12 @@ function _processFunction( $eval, $func )
             break;
 
         case "Avg":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+            $result = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
             if( $eval->error ) return 0;
             $count = 1;
             while( $tokenThatCausedBreak === "com" )
             {
-                $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
+                $result2 = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, true, $tokenThatCausedBreak );
                 if( $eval->error ) return 0;
 
                 $result += $result2;
@@ -599,14 +599,14 @@ function _processFunction( $eval, $func )
 
 // Evaluates an exponentiation.
 
-function _processExponentiation( $eval,
-                                 $base,      // The base has already been fetched;
-                                &$rightOp )  // RETURN: the token (operator) that follows.
+function matheval_processExponentiation( $eval,
+                                         $base,      // The base has already been fetched;
+                                        &$rightOp )  // RETURN: the token (operator) that follows.
 {
     $exponent = 0.0;
     $result = 0.0;
 
-    $exponent = _processFactors( $eval, 1, "Mul", true, $rightOp );
+    $exponent = matheval_processFactors( $eval, 1, "Mul", true, $rightOp );
     if( $eval->error ) return 0;
 
     $result = pow( $base, $exponent );
@@ -623,9 +623,9 @@ function _processExponentiation( $eval,
 
 // Evaluates a factorial using the Gamma function.
 
-function _processFactorial( $eval,
-                            $value,     // The value to compute has already been fetched;
-                           &$rightOp )  // RETURN: the token (operator) that follows.
+function matheval_processFactorial( $eval,
+                                    $value,     // The value to compute has already been fetched;
+                                   &$rightOp )  // RETURN: the token (operator) that follows.
 {
     $result = 0.0;
 
@@ -636,7 +636,7 @@ function _processFactorial( $eval,
         return 0;
     }
 
-    $result = _gamma( $value + 1 );
+    $result = matheval_gamma( $value + 1 );
 
     if( is_nan( $result ) || is_infinite( $result ) )
     {
@@ -644,7 +644,7 @@ function _processFactorial( $eval,
         return 0;
     }
 
-    _processToken( $eval, $rightOp );
+    matheval_processToken( $eval, $rightOp );
     if( $eval->error ) return 0;
 
     return $result;
@@ -656,8 +656,8 @@ function _processFactorial( $eval,
 // The function returns a number if the token is a value a const. or a param.
 // Whitespace is ignored.
 
-function _processToken( $eval,
-                       &$token ) // RETURN: the token.
+function matheval_processToken( $eval,
+                               &$token ) // RETURN: the token.
 {
     $t = "";
     $v = 0.0;
@@ -673,7 +673,7 @@ function _processToken( $eval,
 
         if( ( ($eval->expression)[$eval->cursor] >= "0" && ($eval->expression)[$eval->cursor] <= "9" ) || ($eval->expression)[$eval->cursor] === "." )
         {
-            $v = _processValue( $eval );
+            $v = matheval_processValue( $eval );
             if( $eval->error )
             {
                 $t = "Err";
@@ -712,7 +712,7 @@ function _processToken( $eval,
                     break;
 
                 case "+":
-                    _processPlusToken( $eval, $t );
+                    matheval_processPlusToken( $eval, $t );
                     break;
 
                 case "-":
@@ -928,7 +928,7 @@ function _processToken( $eval,
 // Advances the cursor.
 // Always returns 0.
 
-function _processPlusToken( $eval, &$token )
+function matheval_processPlusToken( $eval, &$token )
 {
     $c = "";
 
@@ -956,12 +956,12 @@ function _processPlusToken( $eval, &$token )
 // The cursor is positioned after an eventually
 // `+` or `-` operator that comes before the value.
 
-function _processValue( $eval )
+function matheval_processValue( $eval )
 {
     $endptr = 0;
     $value = 0.0;
 
-    $value = _strtod( substr( $eval->expression, $eval->cursor ), $endptr );
+    $value = matheval_strtod( substr( $eval->expression, $eval->cursor ), $endptr );
 
     if( $endptr === 0 )
     {
@@ -986,7 +986,7 @@ function _processValue( $eval )
 
 // php implementation of C's strtod
 
-function _strtod( $str, &$endptr = null )
+function matheval_strtod( $str, &$endptr = null )
 {
     // Skip leading whitespace
 
@@ -1076,7 +1076,7 @@ function _strtod( $str, &$endptr = null )
 // php implementation of gamma function. credit:
 // https://hewgill.com/picomath/php/gamma.php.html
 
-function _gamma( $x )
+function matheval_gamma( $x )
 {
     # Split the function domain into three intervals:
     # ( 0, 0.001 ), [0.001, 12 ), and ( 12, infinity )
@@ -1178,16 +1178,16 @@ function _gamma( $x )
     ###########################################################################
     # Third interval: [12, infinity )
 
-    return exp( _logGamma( $x ) );
+    return exp( matheval_logGamma( $x ) );
 }
 
 
 
-function _logGamma( $x )
+function matheval_logGamma( $x )
 {
     if( $x < 12.0 )
     {
-        return log( abs( _gamma( $x ) ) );
+        return log( abs( matheval_gamma( $x ) ) );
     }
 
     # Abramowitz and Stegun 6.1.41
