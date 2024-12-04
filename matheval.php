@@ -1109,12 +1109,6 @@ function _gamma( $x )
     ###########################################################################
     # Third interval: [12, infinity )
 
-    if( $x > 171.624 )
-    {
-        # Correct answer too large to display.
-        return Double.POSITIVE_INFINITY;
-    }
-
     return exp( _logGamma( $x ) );
 }
 
