@@ -71,7 +71,6 @@ function matheval( $expression, $parameters = null, &$error = null )
     {
         $keywords =
         [
-            "e",
             "exp",
             "fact",
             "pi",
@@ -85,7 +84,6 @@ function matheval( $expression, $parameters = null, &$error = null )
             "acos",
             "asin",
             "atan",
-            "average",
             "avg"
         ];
 
@@ -273,22 +271,21 @@ function _processFactors( $eval,
     $rightValue = 0.0;
     $sign = 1;
 
-    $functions =
+    $funcTok =
     [
-        "exp",
-        "fact",
-        "pow",
-        "cos",
-        "sin",
-        "tan",
-        "log",
-        "max",
-        "min",
-        "acos",
-        "asin",
-        "atan",
-        "average",
-        "avg"
+        "ETExp",
+        "ETFact",
+        "ETPow",
+        "ETCos",
+        "ETSin",
+        "ETTan",
+        "ETLog",
+        "ETMax",
+        "ETMin",
+        "ETACos",
+        "ETASin",
+        "ETATan",
+        "ETAvg"
     ];
 
     do
@@ -323,7 +320,7 @@ function _processFactors( $eval,
         {
             $eval->roundBracketsCount++;
 
-            $rightValue = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $rightValue = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
 
             $token = "value";
@@ -331,7 +328,7 @@ function _processFactors( $eval,
 
         // A function ?
 
-        if( in_array( $token, $functions ) )
+        if( in_array( $token, $funcTok ) )
         {
             $rightValue = _processFunction( $eval, $token );
             if( $eval->error ) return 0;
@@ -440,7 +437,7 @@ function _processFunction( $eval, $func )
 
     // Eat an open round bracket and count it
 
-    processToken( $eval, $token );
+    _processToken( $eval, $token );
     if( $eval->error ) return 0;
 
     if( $token !== "ETrbo" )
@@ -454,43 +451,43 @@ function _processFunction( $eval, $func )
     switch( $func )
     {
         case "ETSin":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = sin( $result );
             break;
 
         case "ETCos":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = cos( $result );
             break;
 
         case "ETTan":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = tan( $result );
             break;
 
         case "ETASi":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = asin( $result );
             break;
 
         case "ETACo":
-            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = acos( $result );
             break;
 
         case "ETATa":
-            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = atan( $result );
             break;
 
         case "ETFac":
-            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             if( $result < 0 )
             {
@@ -504,15 +501,15 @@ function _processFunction( $eval, $func )
             break;
 
         case "ETExp":
-            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = exp( $result );
             break;
 
         case "ETPow":
-            $result = _processAddends( $eval, -1, false, true, NULL );
+            $result = _processAddends( $eval, -1, false, true );
             if( $eval->error ) return 0;
-            $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+            $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
             $result = pow( $result, $result2 );
             break;
@@ -527,7 +524,7 @@ function _processFunction( $eval, $func )
             }
             else
             {
-                $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false, NULL );
+                $result2 = _processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
                 if( $eval->error ) return 0;
                 $result = log( $result2 ) / log( $result );
             }
