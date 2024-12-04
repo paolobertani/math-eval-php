@@ -170,10 +170,10 @@ function _processAddends( $eval,
                           $breakOnRoundBracketsCount,    // If open brackets count goes down to this count then exit;
                           $breakOnEOF,                   // exit if the end of the string is met;
                           $breakOnCOMMA,                 // exit if a comma is met;
-                         &$tokenThatCausedBreak = NULL ) // if not null the token/symbol that caused the function to exit;
+                         &$tokenThatCausedBreak = null ) // if not null the token/symbol that caused the function to exit;
 {
-    $leftOp = NULL;
-    $rightOp = NULL;
+    $leftOp = null;
+    $rightOp =null;
 
     $value = 0.0;
     $result = 0.0;
@@ -182,7 +182,7 @@ function _processAddends( $eval,
     // 0 + ...
 
     $result = 0;
-    $rightOp = "ETSum";
+    $rightOp = "Sum";
 
     do
     {
@@ -190,19 +190,19 @@ function _processAddends( $eval,
 
         // [ Each addend A is treated as a (potential and higher-precedence)
         //   multiplication and evaluated as 1 * A with the function below ]
-        $value = _processFactors( $eval, 1, "ETMul", false, $rightOp );
+        $value = _processFactors( $eval, 1, "Mul", false, $rightOp );
         if( $eval->error ) return 0;
 
-        $result = $leftOp === "ETSum" ? ( $result + $value ) : ( $result - $value );
+        $result = $leftOp === "Sum" ? ( $result + $value ) : ( $result - $value );
 
         // ...and go on as long there are sums ands subs.
     }
-    while( $rightOp === "ETSum" || $rightOp === "ETSum" );
+    while( $rightOp === "Sum" || $rightOp === "Sub" );
 
     // A round close bracket:
     // check for negative count.
 
-    if( $rightOp === "ETrbc" )
+    if( $rightOp === "rbc" )
     {
         $eval->roundBracketsCount--;
         if( $eval->roundBracketsCount < 0 )
