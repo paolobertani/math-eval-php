@@ -143,7 +143,7 @@ function matheval( $expression, &$error = null, $parameters = null )
 
     if( $eval->error )
     {
-        $error = $eval->error;
+        $error = "{$eval->error}\n{$eval->expression}\n" . str_repeat( " ", $eval->cursor ) . "^---\n";
         return false;
     }
     else
