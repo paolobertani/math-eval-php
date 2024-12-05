@@ -1,4 +1,5 @@
-<?php/*
+<?php
+/*
 
 matheval
 version 1.0
@@ -136,7 +137,7 @@ function matheval( $expression, &$error = null, $parameters = null )
     //
 
     $eval = new StdClass();
-    $eval->expression = $expression . "\0";
+    $eval->expression = $expression . "\0\0";
     $eval->params = $parameters;
     $eval->cursor = 0;
     $eval->result = 0;
@@ -962,19 +963,19 @@ function matheval_processPlusToken( $eval, &$token )
 
 function matheval_processValue( $eval )
 {
-    $endptr = 0;
+    $endptr = $eval->cursor;
     $value = 0.0;
 
-    $value = matheval_strtod( substr( $eval->expression, $eval->cursor ), $endptr );
+    $value = matheval_strtod( $eval->expression, $endptr );
 
-    if( $endptr === 0 )
+    if( $endptr === $eval->cursor )
     {
         $eval->error = "expected value";
         $value = 0;
     }
     else
     {
-        $eval->cursor += $endptr;
+        $eval->cursor = $endptr;
 
         if( is_nan( $value ) || is_infinite( $value ) )
         {
@@ -990,15 +991,17 @@ function matheval_processValue( $eval )
 
 // php implementation of C's strtod
 
-function matheval_strtod( $str, &$endptr = null )
+function matheval_strtod( $str, &$cursor )
 {
+    $result = 0;
+
     // Will be set to true when a number is detected
 
     $isnum = false;
 
     // Skip leading whitespace
 
-    $i = 0;
+    $i = $cursor;
     while( $str[ $i ] === ' ' || $str[ $i ] === '\t' || $str[ $i ] === '\n' || $str[ $i ] === '\r' )
     {
         $i++;
@@ -1012,7 +1015,7 @@ function matheval_strtod( $str, &$endptr = null )
         $sign = -1;
         $i++;
     }
-    elseif( $str[ 0 ] === '+' )
+    elseif( $str[ $i ] === '+' )
     {
         $i++;
     }
@@ -1027,12 +1030,11 @@ function matheval_strtod( $str, &$endptr = null )
         $isnum = true;
     }
 
-
     // Parse the fractional part
 
     $fractional_part = 0;
     $fractional_divisor = 1;
-    if( $str[ $i ] === '.' )
+    if( $str[ $i ] === '.' && $str[ $i+1 ] >= '0' && $str[ $i+1 ] <= '9' )
     {
         $i++;
         while( $str[ $i ] >= '0' && $str[ $i ] <= '9' )
@@ -1046,43 +1048,46 @@ function matheval_strtod( $str, &$endptr = null )
 
     // Parse the exponent part
 
-    $exponent = 0;
-    $exponent_sign = 1;
-    if( $str[ $i ] === 'e' || $str[ $i ] === 'E' )
+    if( $isnum )
     {
-        $i++;
-        if( $str[ $i ] === '-' )
+        $exponent = 0;
+        $exponent_sign = 1;
+        if( $str[ $i ] === 'e' || $str[ $i ] === 'E' )
         {
-            $exponent_sign = -1;
-            $i++;
-        }
-        elseif( $str[ $i ] === '+' )
-        {
-            $i++;
-        }
+            if( ( ( $str[ $i+1 ] === '+' || $str[ $i+1 ] === '-' ) && ( $str[ $i+2 ] >= '0' && $str[ $i+2 ] <= '9' ) ) ||
+                                                                      ( $str[ $i+1 ] >= '0' && $str[ $i+1 ] <= '9' ) )
+            {
+                $i++;
+                if( $str[ $i ] === '-' )
+                {
+                    $exponent_sign = -1;
+                    $i++;
+                }
+                elseif( $str[ $i ] === '+' )
+                {
+                    $i++;
+                }
 
-        while( $str[ $i ] >= '0' && $str[ $i ] <= '9' )
-        {
-            $exponent = $exponent * 10 + (int)$str[ $i ];
-            $i++;
-        }
+                while( $str[ $i ] >= '0' && $str[ $i ] <= '9' )
+                {
+                    $exponent = $exponent * 10 + (int)$str[ $i ];
+                    $i++;
+                }
 
-        $exponent *= $exponent_sign;
+                $exponent *= $exponent_sign;
+            }
+        }
     }
 
     // Done
 
-    $result = $sign *
-              ( $integer_part + $fractional_part / $fractional_divisor ) *
-              pow( 10, $exponent );
-
     if( $isnum )
     {
-        $endptr = $i;
-    }
-    else
-    {
-        $endprt = 0;
+        $result = $sign *
+                  ( $integer_part + $fractional_part / $fractional_divisor ) *
+                  pow( 10, $exponent );
+
+        $cursor = $i;
     }
 
     return $result;
