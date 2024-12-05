@@ -42,9 +42,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
+/*
+
+ matheval_unary_minus_has_highest_precedence:
+
+ when set to `true`:
+
+ -2^(1/2) is evaluated as (-2)^(1/2) i.e. square root ot of -2 and throw an error
+
+ when set to `false`:
+
+ -2^(1/2) is evaluated as -(2^1/2) i.e. and results in -1.41421356...
+*/
+
+
+
 if( ! defined( "matheval_unary_minus_has_highest_precedence" ) )
 {
-    define( "matheval_unary_minus_has_highest_precedence", true );
+    define( "matheval_unary_minus_has_highest_precedence", false );
 }
 
 
@@ -274,7 +289,7 @@ function matheval_processFactors( $eval,
     $funcTok =
     [
         "Exp",
-        "Fact",
+        "Fac",
         "Pow",
         "Cos",
         "Sin",
@@ -282,9 +297,9 @@ function matheval_processFactors( $eval,
         "Log",
         "Max",
         "Min",
-        "ACos",
-        "ASin",
-        "ATan",
+        "ACo",
+        "ASi",
+        "ATa",
         "Avg"
     ];
 
@@ -323,7 +338,7 @@ function matheval_processFactors( $eval,
             $rightValue = matheval_processAddends( $eval, $eval->roundBracketsCount - 1, false, false );
             if( $eval->error ) return 0;
 
-            $token = "value";
+            $token = "Val";
         }
 
         // A function ?
@@ -988,6 +1003,10 @@ function matheval_processValue( $eval )
 
 function matheval_strtod( $str, &$endptr = null )
 {
+    // Will be set to true when a number is detected
+
+    $isnum = false;
+
     // Skip leading whitespace
 
     $i = 0;
@@ -1016,6 +1035,7 @@ function matheval_strtod( $str, &$endptr = null )
     {
         $integer_part = $integer_part * 10 + (int)$str[ $i ];
         $i++;
+        $isnum = true;
     }
 
 
@@ -1031,6 +1051,7 @@ function matheval_strtod( $str, &$endptr = null )
             $fractional_part = $fractional_part * 10 + (int)$str[ $i ];
             $fractional_divisor *= 10;
             $i++;
+            $isnum = true;
         }
     }
 
@@ -1066,7 +1087,14 @@ function matheval_strtod( $str, &$endptr = null )
               ( $integer_part + $fractional_part / $fractional_divisor ) *
               pow( 10, $exponent );
 
-    $endptr = $i;
+    if( $isnum )
+    {
+        $endptr = $i;
+    }
+    else
+    {
+        $endprt = 0;
+    }
 
     return $result;
 }
