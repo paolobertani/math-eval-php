@@ -1,5 +1,4 @@
-<?php
-/*
+<?php/*
 
 matheval
 version 1.0
@@ -38,24 +37,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------------------------
 
-*/
 
+matheval_unary_minus_has_highest_precedence:
 
+   when set to `true`:
+   -2^(1/2) is evaluated as (-2)^(1/2) : square root of -2 (throws an error)
 
-/*
-
- matheval_unary_minus_has_highest_precedence:
-
- when set to `true`:
-
- -2^(1/2) is evaluated as (-2)^(1/2) i.e. square root ot of -2 and throw an error
-
- when set to `false`:
-
- -2^(1/2) is evaluated as -(2^1/2) i.e. and results in -1.41421356...
-*/
-
-
+   when set to `false`:
+   -2^(1/2) is evaluated as -(2^1/2) : -1.41421356... */
 
 if( ! defined( "matheval_unary_minus_has_highest_precedence" ) )
 {
