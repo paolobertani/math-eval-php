@@ -311,14 +311,6 @@ function MathEvalTest( $lineNumber, $expectedStatus, $expectedResult, $expressio
         return 0;
     }
 
-    if( $lineNumber === 234 )
-    {
-        var_export( $expectedStatus ); echo "\n";
-        var_export( $exitStatus     ); echo "\n";
-        var_export( $expectedResult ); echo "\n";
-        var_export( $result         ); echo "\n";
-    }
-
     echo "Test failed at line: $lineNumber\n\n";
     echo "Expression:          `$expression`\n\n";
     echo "Expected status is:  $expectedStatus\n";
