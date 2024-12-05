@@ -58,6 +58,12 @@ function MathEvalRunTests()
     $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 0.12,    "12E-2" );
     $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 12,      "12E0" );
     $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12a0" );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12.e" );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12e+" );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "1.+1" );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12.e" );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12.e+" );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12.e1" );
     $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       "12E2.5");      // * decimal exponent not allowed
     $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0,       ".-2" );        // * not a number
 
@@ -326,15 +332,6 @@ function MathEvalTest( $lineNumber, $expectedStatus, $expectedResult, $expressio
     }
 
     echo "\n\n";
-
-    // if( $lineNumber === 234 )
-    // {
-    //     var_export( $expectedStatus ); echo "\n";
-    //     var_export( $exitStatus     ); echo "\n";
-    //     var_export( $expectedResult ); echo "\n";
-    //     var_export( $result         ); echo "\n";
-    //     exit;
-    // }
 
     return 1;
 }
