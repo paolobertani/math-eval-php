@@ -54,6 +54,25 @@ if( ! defined( "matheval_unary_minus_has_highest_precedence" ) )
 
 
 
+
+// Set to true to run THIS SCRIPT directly from the CLI
+if( false )
+{
+    $result = matheval( $argv[1], /**/$error ) . "\n";
+    if( $error )
+    {
+        echo "Error: $error\n";
+    }
+    else
+    {
+        echo "Error: none\nType: " . gettype( $result );
+        echo "\n$reult\n";
+    }
+    exit;
+}
+
+
+
 function matheval( $expression, &$error = null, $parameters = null )
 {
     $name = "";
@@ -89,7 +108,8 @@ function matheval( $expression, &$error = null, $parameters = null )
             "acos",
             "asin",
             "atan",
-            "avg"
+            "avg",
+            "average"
         ];
 
         foreach( $parameters as $name => $value )
@@ -137,7 +157,7 @@ function matheval( $expression, &$error = null, $parameters = null )
     //
 
     $eval = new StdClass();
-    $eval->expression = $expression . "\0\0";
+    $eval->expression = $expression . "\0\0"; // expr is null terminated to allow parser detect EOF as "\0" is met
     $eval->params = $parameters;
     $eval->cursor = 0;
     $eval->result = 0;
@@ -307,7 +327,7 @@ function matheval_processFactors( $eval,
             $rightValue = matheval_processToken( $eval, $token );
             if( $eval->error ) return 0;
         }
-        else if( $token === "Sum" )
+        elseif( $token === "Sum" )
         {
             $sign = 1;
             $rightValue = matheval_processToken( $eval, $token );
@@ -393,8 +413,9 @@ function matheval_processFactors( $eval,
         {
             $leftValue = $leftValue * $rightValue * $sign;
         }
-        else
+        elseif( $op === "Div" ) // "Div" is expected but this add clarity to the code
         {
+            $leftValue = $leftValue * $rightValue * $sign;
             if( $rightValue === 0 )
             {
                 $eval->error = "division by zero";
