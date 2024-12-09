@@ -160,7 +160,6 @@ function matheval( $expression, &$error = null, $parameters = null )
     $eval->expression = $expression . "\0\0"; // expr is null terminated to allow parser detect EOF as "\0" is met
     $eval->params = $parameters;
     $eval->cursor = 0;
-    $eval->result = 0;
     $eval->roundBracketsCount = 0;
     $eval->error = "";
 
@@ -197,8 +196,8 @@ function matheval_processAddends( $eval,
                                   $breakOnCOMMA,                 // exit if a comma is met;
                                  &$tokenThatCausedBreak = null ) // if not null the token/symbol that caused the function to exit;
 {
-    $leftOp = null;
-    $rightOp =null;
+    $leftToken = null;
+    $rightToken =null;
 
     $value = 0.0;
     $result = 0.0;
@@ -207,27 +206,27 @@ function matheval_processAddends( $eval,
     // 0 + ...
 
     $result = 0;
-    $rightOp = "Sum";
+    $rightToken = "Sum";
 
     do
     {
-        $leftOp = $rightOp;
+        $leftToken = $rightToken;
 
         // [ Each addend A is treated as a (potential and higher-precedence)
         //   multiplication and evaluated as 1 * A with the function below ]
-        $value = matheval_processFactors( $eval, 1, "Mul", false, $rightOp );
+        $value = matheval_processFactors( $eval, 1, "Mul", false, $rightToken );
         if( $eval->error ) return 0;
 
-        $result = $leftOp === "Sum" ? ( $result + $value ) : ( $result - $value );
+        $result = $leftToken === "Sum" ? ( $result + $value ) : ( $result - $value );
 
         // ...and go on as long there are sums ands subs.
     }
-    while( $rightOp === "Sum" || $rightOp === "Sub" );
+    while( $rightToken === "Sum" || $rightToken === "Sub" );
 
     // A round close bracket:
     // check for negative count.
 
-    if( $rightOp === "rbc" )
+    if( $rightToken === "rbc" )
     {
         $eval->roundBracketsCount--;
         if( $eval->roundBracketsCount < 0 )
@@ -239,11 +238,11 @@ function matheval_processAddends( $eval,
 
     // Returns the token that caused the function to exit
 
-    $tokenThatCausedBreak = $rightOp;
+    $tokenThatCausedBreak = $rightToken;
 
     // Check if must exit
 
-    if( ( $eval->roundBracketsCount === $breakOnRoundBracketsCount ) || ( $breakOnEOF && $rightOp === "Eof" ) || ( $breakOnCOMMA && $rightOp === "com" ) )
+    if( ( $eval->roundBracketsCount === $breakOnRoundBracketsCount ) || ( $breakOnEOF && $rightToken === "Eof" ) || ( $breakOnCOMMA && $rightToken === "com" ) )
     {
         if( is_nan( $result ) || is_infinite( $result ) )
         {
@@ -256,7 +255,7 @@ function matheval_processAddends( $eval,
 
     // If not it's an error.
 
-    switch( $rightOp )
+    switch( $rightToken )
     {
         case "Eof":
             $eval->error = "unexpected end of expression";
@@ -296,7 +295,7 @@ function matheval_processFactors( $eval,
     $rightValue = 0.0;
     $sign = 1;
 
-    $funcTok =
+    $funcToks =
     [
         "Exp",
         "Fac",
@@ -353,7 +352,7 @@ function matheval_processFactors( $eval,
 
         // A function ?
 
-        if( in_array( $token, $funcTok ) )
+        if( in_array( $token, $funcToks ) )
         {
             $rightValue = matheval_processFunction( $eval, $token );
             if( $eval->error ) return 0;
@@ -697,7 +696,8 @@ function matheval_processToken( $eval,
     {
         // value maybe
 
-        if( ( ($eval->expression)[$eval->cursor] >= "0" && ($eval->expression)[$eval->cursor] <= "9" ) || ($eval->expression)[$eval->cursor] === "." )
+        $c = ( $eval->expression )[ $eval->cursor ];
+        if( ( $c >= "0" && $c <= "9" ) || $c === "." )
         {
             $v = matheval_processValue( $eval );
             if( $eval->error )
