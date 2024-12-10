@@ -414,7 +414,6 @@ function matheval_processFactors( $eval,
         }
         elseif( $op === "Div" ) // "Div" is expected but this add clarity to the code
         {
-            $leftValue = $leftValue * $rightValue * $sign;
             if( $rightValue === 0 )
             {
                 $eval->error = "division by zero";
