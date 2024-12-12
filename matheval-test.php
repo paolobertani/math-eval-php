@@ -270,7 +270,16 @@ function MathEvalRunTests()
     $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0, "min(-(9^9^9),9^9^9" );                   // * huge
     $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0, "pow(9,pow(9,9))" );                      // * huge
 
-    // All tests passed?
+    // Parameters
+
+    $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 5, " 2* foo - bar", [ "foo" => 3, "bar" => 1] );
+    $fails += MathEvalTest( __LINE__, MathEvaluationFailure, 0, " 2* foo - BAZ", [ "foo" => 3, "bar" => 1] );
+    $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 0.999449080234467150824,
+                                                                "p1^sin(log(p2,p3)*p6*p4/p5!)",
+                                                                [ "p1" => .2, "p2" => exp(1), "p3" => 3.0, "p4" => M_PI, "p5" => 8.0, "p6" => 4.0 ] );
+
+
+    // Outcome
 
     if( $fails === 0 )
     {
@@ -288,13 +297,13 @@ function MathEvalRunTests()
 // Test function: compare expected exit status (success/error) and expected result.
 //
 
-function MathEvalTest( $lineNumber, $expectedStatus, $expectedResult, $expression )
+function MathEvalTest( $lineNumber, $expectedStatus, $expectedResult, $expression, $params = null )
 {
     $result = 0.0;
     $error  = "";
     $exitStatus = "";
 
-    $result = matheval( $expression, $error );
+    $result = matheval( $expression, $error, $params );
 
     if( $result === false )
     {
