@@ -55,18 +55,25 @@ if( ! defined( "matheval_unary_minus_has_highest_precedence" ) )
 
 
 
-// Set to true to run THIS SCRIPT directly from the CLI
-if( false )
+// Check if the script is called directy from the CLI
+
+if( count( get_included_files() ) === 1 )
 {
-    $result = matheval( $argv[1], /**/$error ) . "\n";
+    if( ! isset( $argv[1] ) )
+    {
+        echo "excpected expression to evaluated as first (and only) parameter\n";
+        exit();
+    }
+
+    $result = matheval( $argv[1], $error );
     if( $error )
     {
         echo "Error: $error\n";
     }
     else
     {
-        echo "Error: none\nType: " . gettype( $result );
-        echo "\n$reult\n";
+        echo "Error:  none\nType:   " . gettype( $result );
+        echo "\nResult: $result\n";
     }
     exit;
 }
