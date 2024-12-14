@@ -1,11 +1,8 @@
 <?php
-//
-//  test suite
-//
 
 
 
-require_once( "matheval.php" );
+require_once( __DIR__ . "/../matheval.php" );
 
 
 
@@ -182,7 +179,7 @@ function MathEvalRunTests()
     $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 0,   "1.234!   -  fact(1.234)" );
     $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 0,   "1.2^3.4  -  pow(1.2,3.4)" );
 
-    // Operator precedencedence
+    // Operator precedence
 
     $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 14,  "2+3*4" );  // + < *
     $fails += MathEvalTest( __LINE__, MathEvaluationSuccess, 19,  "1+2*3^2" );// + < * < ^
