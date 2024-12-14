@@ -38,43 +38,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------------------------
 
+*/
 
-matheval_unary_minus_has_highest_precedence:
 
-   when set to `true`:
-   -2^(1/2) is evaluated as (-2)^(1/2) : square root of -2 (throws an error)
-
-   when set to `false`:
-   -2^(1/2) is evaluated as -(2^1/2) : -1.41421356... */
 
 if( ! defined( "matheval_unary_minus_has_highest_precedence" ) )
 {
     define( "matheval_unary_minus_has_highest_precedence", false );
+
+    //   true:  -2^2  =  (-2)^2  =   4
+    //  false:  -2^2  =  -(2^2)  =  -4
 }
 
 
 
-
-// Check if the script is called directy from the CLI
+// If the script is called directy from the CLI
+// it is evaluated the expression passed as first param
+// and result returned to stdout.
 
 if( count( get_included_files() ) === 1 )
 {
     if( ! isset( $argv[1] ) )
     {
-        echo "excpected expression to evaluated as first (and only) parameter\n";
+        echo "expected expression to evaluate as first (and only) parameter\n";
         exit();
     }
 
     $result = matheval( $argv[1], $error );
-    if( $error )
-    {
-        echo "Error: $error\n";
-    }
-    else
-    {
-        echo "Error:  none\nType:   " . gettype( $result );
-        echo "\nResult: $result\n";
-    }
+
+    echo $error ? "Error: $error\n" : "$result\n";
+
     exit;
 }
 
